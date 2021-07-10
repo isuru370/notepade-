@@ -7,9 +7,11 @@ import com.sun.java.swing.plaf.windows.WindowsLookAndFeel;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FileDialog;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.BufferedReader;
@@ -31,14 +33,17 @@ import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 import javax.swing.plaf.nimbus.NimbusLookAndFeel;
+import javax.swing.text.Element;
 import javax.swing.undo.UndoManager;
 
 
 
-public class Notepad extends JFrame implements ActionListener {
+public class Notepad extends JFrame implements ActionListener,KeyListener {
     
     JFrame window;
     public static JTextArea area;
@@ -55,6 +60,8 @@ public class Notepad extends JFrame implements ActionListener {
     String Fileaddress;
     FileNameExtensionFilter onlifile;
     UndoManager unandre;
+    String text2;
+    JTextArea line;
    
    
     
@@ -64,14 +71,16 @@ public class Notepad extends JFrame implements ActionListener {
         initComponents();
         textarea();
         Popmenu();
-        setedit();
-       window.setVisible(true);
-     
+        window.setVisible(true);
+        setLineNumbers();
+        
+        
+      
     }
     
     public void cratwindo(){
         window = new JFrame("Notepad");
-        window.setBounds(0,0,750, 600);
+        window.setBounds(350,60,750, 600);
         window.setLayout(new BorderLayout());
         window.setDefaultCloseOperation(EXIT_ON_CLOSE);
         statusBar =new JLabel("||       Ln 1, Col 1  ",JLabel.RIGHT);
@@ -87,7 +96,9 @@ public class Notepad extends JFrame implements ActionListener {
          area.getDocument().addUndoableEditListener(unandre);
          area.setWrapStyleWord(true);
          area.setLineWrap(true);
+         area.addKeyListener(this);
          un();
+         
     }
     public void initComponents(){
         
@@ -255,10 +266,6 @@ public class Notepad extends JFrame implements ActionListener {
        
         
     }
-        public  void setedit(){
-            print.setEnabled(false);
-            String as = area.getText();
-        }
 
     public void Popmenu(){
         final JPopupMenu pop = new JPopupMenu();
@@ -327,14 +334,75 @@ public class Notepad extends JFrame implements ActionListener {
         
        
     }
+     public void setLineNumbers() {
+        line = new JTextArea(0, 3);
+        line.setEditable(false);
+        line.setBackground(Color.GRAY);
+        line.setForeground(Color.WHITE);
+        line.setFont(new Font("Tahoma", 0, 18));
+
+        DocumentListener d = new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent de) {
+                line.setFont(area.getFont());
+                String s[] = getLine().split("\\n");
+                statusBar.setText(s[s.length - 1]);
+                line.setText(getLine());
+
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent de) {
+                line.setFont(area.getFont());
+                String s[] = getLine().split("\\n");
+                statusBar.setText(s[s.length - 1]);
+                line.setText(getLine());
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent de) {
+                line.setFont(area.getFont());
+                String s[] = getLine().split("\\n");
+                statusBar.setText(s[s.length - 1]);
+                line.setText(getLine());
+            }
+
+            
+        };
+        area.getDocument().addDocumentListener(d);
+        scpane.setRowHeaderView(line);
+    }
+
+    public String getLine() {
+        int caretPos = 0;
+        String lines;
+        caretPos = area.getDocument().getLength();
+        Element root = area.getDocument().getDefaultRootElement();
+        lines = String.format("%s%s", 1, System.lineSeparator());
+
+        for (int i = 2; i < root.getElementIndex(caretPos) + 2; i++) {
+            lines += String.format("%s%s", i, System.lineSeparator());
+
+        }
+
+        return lines;
+
+    }
     
     public void actionPerformed(ActionEvent ae) {
         if (ae.getActionCommand().equals("New")) {
            
+            if(text2.isEmpty()){
+                  
             area.setText("");
             window.setTitle("New");
             Filename = null;
             Fileaddress = null;
+                 
+            }else{     
+             saved();
+            }
+           
         
         } else if (ae.getActionCommand().equals("Open")) {
              openfile();
@@ -562,8 +630,17 @@ public class Notepad extends JFrame implements ActionListener {
     }
     
     public void saved(){
-       if(Filename == null){
-           saveasfile();
+        int x =  JOptionPane.showConfirmDialog(null,"Do you wont save file ", "Select", JOptionPane.YES_NO_CANCEL_OPTION);
+        if( x == 0){
+             if(Filename == null){
+             saveasfile();
+        } if(x == 1){
+            area.setText("");
+            window.setTitle("New");
+            Filename = null;
+            Fileaddress = null;
+        }
+      
        }else{
            try {
                 FileWriter fw = new FileWriter(Fileaddress + Filename);
@@ -656,6 +733,52 @@ public class Notepad extends JFrame implements ActionListener {
     public void re(){
         unandre.redo();
     }
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+       
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+        text2 = area.getText();
+        System.out.println(text2);
+    }
+//     public void opense(){
+//        JFileChooser  fi = new JFileChooser(".");
+//        fi.setDialogType(JFileChooser.CANCEL_OPTION);
+//        fi.setDialogTitle("open ");
+//        fi.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+//        fi.setFileHidingEnabled(false);
+//        fi.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+//        fi.setMultiSelectionEnabled(true);
+//        
+//        int rs = fi.showOpenDialog(fi);
+//        
+//        if(rs == JFileChooser.APPROVE_OPTION);
+//        File sf = fi.getSelectedFile();
+//        FileFilter select = (FileFilter) fi.getFileFilter();
+//        
+//     Filename = sf.getName();
+//     Fileaddress = sf.getParent();
+//     
+//         try {
+//            BufferedReader br = new BufferedReader( new FileReader(Fileaddress + Filename));
+//            area.setText("");
+//            String line = null;
+//            while((line = br.readLine())!= null){
+//            area.append(line + "\n");
+//            }
+//            br.close();
+//        } catch (Exception e) {
+//            System.out.println("File Not Open");
+//    }
+//    }
 }
         
          
