@@ -122,12 +122,7 @@ public class fontChooser extends JFrame implements ActionListener{
         ta.append("$%^&&*&%%^$^(*&^^");
         JScrollPane tax = new JScrollPane(ta);
         tax.setBounds(50, 250, 300, 80);
-        
-       
-       
-
-       
-        
+ 
         add(fon);
         add(fon1);
         add(fon2);

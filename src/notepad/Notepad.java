@@ -33,6 +33,8 @@ import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -40,6 +42,7 @@ import javax.swing.plaf.metal.MetalLookAndFeel;
 import javax.swing.plaf.nimbus.NimbusLookAndFeel;
 import javax.swing.text.Element;
 import javax.swing.undo.UndoManager;
+
 
 
 
@@ -62,6 +65,7 @@ public class Notepad extends JFrame implements ActionListener,KeyListener {
     UndoManager unandre;
     String text2;
     JTextArea line;
+    
    
    
     
@@ -73,17 +77,16 @@ public class Notepad extends JFrame implements ActionListener,KeyListener {
         Popmenu();
         window.setVisible(true);
         setLineNumbers();
-        
-        
-      
-    }
+        linecar();
+
+     }
     
     public void cratwindo(){
         window = new JFrame("Notepad");
         window.setBounds(350,60,750, 600);
         window.setLayout(new BorderLayout());
         window.setDefaultCloseOperation(EXIT_ON_CLOSE);
-        statusBar =new JLabel("||       Ln 1, Col 1  ",JLabel.RIGHT);
+        statusBar =new JLabel("||       Ln 1, Col 1,Totcol 1, Wc 1 ",JLabel.RIGHT);
         window.add(statusBar,BorderLayout.SOUTH);
         
     }
@@ -334,6 +337,44 @@ public class Notepad extends JFrame implements ActionListener,KeyListener {
         
        
     }
+    
+    public void linecar(){
+         area.addCaretListener(
+         new CaretListener() {
+            @Override
+            public void caretUpdate(CaretEvent e) {
+                
+               int lineNumber=0;
+               int column=0;
+               int pos=0;
+               int totcol=0;
+               int wcunt = 0;
+
+          try{
+             
+              pos=area.getCaretPosition();
+              lineNumber=area.getLineOfOffset(pos);
+              totcol = pos-area.getLineStartOffset(lineNumber);
+              column=pos-area.getLineCount(); 
+              wcunt =  area.getText().split("\\s+").length;
+
+              }
+              catch(Exception excp){
+             }
+          
+                     if(area.getText().length()==0){
+                     lineNumber=0; 
+                     column=0;
+                     wcunt=0;
+                     totcol=0;
+                     }
+                     statusBar.setText("||       Ln "+(lineNumber+1)+", Col "+(column+0)+",Totcol "+(totcol)+",  wc "+(wcunt));
+                     }
+            
+                  }
+       
+              );
+    }
      public void setLineNumbers() {
         line = new JTextArea(0, 3);
         line.setEditable(false);
@@ -392,13 +433,12 @@ public class Notepad extends JFrame implements ActionListener,KeyListener {
     public void actionPerformed(ActionEvent ae) {
         if (ae.getActionCommand().equals("New")) {
            
-            if(text2.isEmpty()){
-                  
-            area.setText("");
-            window.setTitle("New");
-            Filename = null;
-            Fileaddress = null;
-                 
+            if(text2.isEmpty()){   
+                  area.setText("");
+                  window.setTitle("New");
+                  Filename = null;
+                  Fileaddress = null;
+   
             }else{     
              saved();
             }
@@ -634,13 +674,8 @@ public class Notepad extends JFrame implements ActionListener,KeyListener {
         if( x == 0){
              if(Filename == null){
              saveasfile();
-        } if(x == 1){
-            area.setText("");
-            window.setTitle("New");
-            Filename = null;
             Fileaddress = null;
-        }
-      
+        }    
        }else{
            try {
                 FileWriter fw = new FileWriter(Fileaddress + Filename);
@@ -683,7 +718,7 @@ public class Notepad extends JFrame implements ActionListener,KeyListener {
                  
 //           JTextField name = classname.javaclassname;
              Process process=Runtime.getRuntime().exec("java -cp "+ runs +" A");
-             System.out.println(process);     
+             
              StringBuilder bilder = new StringBuilder();
              BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
              String line;
