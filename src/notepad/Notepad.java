@@ -75,9 +75,10 @@ public class Notepad extends JFrame implements ActionListener,KeyListener {
         initComponents();
         textarea();
         Popmenu();
-        window.setVisible(true);
         setLineNumbers();
         linecar();
+        window.setVisible(true);
+        
 
      }
     
@@ -815,7 +816,9 @@ public class Notepad extends JFrame implements ActionListener,KeyListener {
 //    }
 //    }
 }
-        
+  
+
+
          
     
 
